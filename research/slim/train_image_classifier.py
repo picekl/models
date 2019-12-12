@@ -24,6 +24,7 @@ from datasets import dataset_factory
 from deployment import model_deploy
 from nets import nets_factory
 from preprocessing import preprocessing_factory
+from utils import learning_rate_schedule
 
 slim = tf.contrib.slim
 
@@ -120,6 +121,10 @@ tf.app.flags.DEFINE_float(
     'momentum', 0.9,
     'The momentum for the MomentumOptimizer and RMSPropOptimizer.')
 
+tf.app.flags.DEFINE_float(
+    'min_momentum', 0.85,
+    'The momentum for the MomentumOptimizer and RMSPropOptimizer.')
+
 tf.app.flags.DEFINE_float('rmsprop_momentum', 0.9, 'Momentum.')
 
 tf.app.flags.DEFINE_float('rmsprop_decay', 0.9, 'Decay term for RMSProp.')
@@ -136,14 +141,17 @@ tf.app.flags.DEFINE_integer(
 tf.app.flags.DEFINE_string(
     'learning_rate_decay_type',
     'exponential',
-    'Specifies how the learning rate is decayed. One of "fixed", "exponential",'
-    ' or "polynomial"')
+    'Specifies how the learning rate is decayed. One of "fixed", "exponential", "polynomial", "CLR", "one_cycle"')
 
 tf.app.flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
 
 tf.app.flags.DEFINE_float(
     'end_learning_rate', 0.0001,
     'The minimal end learning rate used by a polynomial decay learning rate.')
+
+tf.app.flags.DEFINE_float(
+    'max_learning_rate', 0.1,
+    'The maximal learning rate used by CLR, one-cycle policy, and learning rate range test.')
 
 tf.app.flags.DEFINE_float(
     'label_smoothing', 0.0, 'The amount of label smoothing.')
@@ -170,6 +178,9 @@ tf.app.flags.DEFINE_float(
     'moving_average_decay', None,
     'The decay to use for the moving average.'
     'If left as None, then moving averages are not used.')
+
+tf.app.flags.DEFINE_float(
+    'step_size', 40, 'Step size for cyclic learning rate')
 
 #######################
 # Dataset Flags #
@@ -279,12 +290,33 @@ def _configure_learning_rate(num_samples_per_epoch, global_step):
                                      power=1.0,
                                      cycle=False,
                                      name='polynomial_decay_learning_rate')
+  elif FLAGS.learning_rate_decay_type == 'lr_range_test':
+    return learning_rate_schedule.learning_rate_range_test(global_step,
+                                                           FLAGS.max_number_of_steps,
+                                                           FLAGS.learning_rate,
+                                                           FLAGS.max_learning_rate,
+                                                           name="LR_test")
+
+  elif FLAGS.learning_rate_decay_type == 'CLR':
+    return learning_rate_schedule.cyclic_learning_rate(global_step,
+                                                      FLAGS.learning_rate,
+                                                      FLAGS.max_learning_rate,
+                                                      FLAGS.step_size,
+                                                      name="CLR")
+  elif FLAGS.learning_rate_decay_type == 'one_cycle':
+    return learning_rate_schedule.cyclic_learning_rate(global_step,
+                                                      FLAGS.learning_rate,
+                                                      FLAGS.max_learning_rate,
+                                                      FLAGS.step_size,
+                                                      max_steps=FLAGS.max_number_of_steps,
+                                                      policy="one_cycle",
+                                                      name="one_cycle")
   else:
     raise ValueError('learning_rate_decay_type [%s] was not recognized' %
                      FLAGS.learning_rate_decay_type)
 
 
-def _configure_optimizer(learning_rate):
+def _configure_optimizer(learning_rate, momentum):
   """Configures the optimizer used for training.
 
   Args:
@@ -321,13 +353,13 @@ def _configure_optimizer(learning_rate):
   elif FLAGS.optimizer == 'momentum':
     optimizer = tf.train.MomentumOptimizer(
         learning_rate,
-        momentum=FLAGS.momentum,
+        momentum=momentum,
         name='Momentum')
   elif FLAGS.optimizer == 'rmsprop':
     optimizer = tf.train.RMSPropOptimizer(
         learning_rate,
         decay=FLAGS.rmsprop_decay,
-        momentum=FLAGS.rmsprop_momentum,
+        momentum=momentum,
         epsilon=FLAGS.opt_epsilon)
   elif FLAGS.optimizer == 'sgd':
     optimizer = tf.train.GradientDescentOptimizer(learning_rate)
@@ -535,8 +567,18 @@ def main(_):
     #########################################
     with tf.device(deploy_config.optimizer_device()):
       learning_rate = _configure_learning_rate(dataset.num_samples, global_step)
-      optimizer = _configure_optimizer(learning_rate)
+      if FLAGS.learning_rate_decay_type == 'one_cycle':
+        momentum = learning_rate_schedule.cyclical_momentum(global_step,
+                                                            min_momentum=FLAGS.min_momentum,
+                                                            max_momentum=FLAGS.momentum,
+                                                            step_size=FLAGS.step_size)
+      elif FLAGS.optimizer == 'rmsprop':
+        momentum = FLAGS.rmsprop_momentum
+      elif FLAGS.optimizer == 'momentum':
+        momentum = FLAGS.momentum
+      optimizer = _configure_optimizer(learning_rate, momentum)
       summaries.add(tf.summary.scalar('learning_rate', learning_rate))
+      summaries.add(tf.summary.scalar('momentum', momentum))
 
     if FLAGS.sync_replicas:
       # If sync_replicas is enabled, the averaging will be done in the chief
