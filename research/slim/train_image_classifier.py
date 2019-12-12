@@ -74,6 +74,11 @@ tf.app.flags.DEFINE_integer(
 tf.app.flags.DEFINE_integer(
     'task', 0, 'Task id of the replica running the training.')
 
+tf.app.flags.DEFINE_integer(
+    'save_interval_steps', 0,
+    'The frequency with which the model is saved (and kept), in training steps. Not saving if set to 0.')
+
+
 ######################
 # Optimization Flags #
 ######################
@@ -217,6 +222,10 @@ tf.app.flags.DEFINE_integer(
 tf.app.flags.DEFINE_integer('max_number_of_steps', None,
                             'The maximum number of training steps.')
 
+tf.app.flags.DEFINE_integer(
+    'set_global_step', None, 'Set a variable to rewrite global_step.')
+
+
 #####################
 # Fine-Tuning Flags #
 #####################
@@ -239,9 +248,17 @@ tf.app.flags.DEFINE_boolean(
     'ignore_missing_vars', False,
     'When restoring a checkpoint would ignore missing variables.')
 
-##########################
-# Attention Module Flags #
-##########################
+########################
+# Session Config Flags #
+########################
+tf.app.flags.DEFINE_boolean(
+    'modest', False,
+    'A "modest" run only consumes necessary GPU memory ~ session_config.gpu_options.allow_growth=True.')
+
+
+########################
+# Loss Function Flags  #
+########################
 
 tf.app.flags.DEFINE_string(
     'attention_module', None,
@@ -364,8 +381,16 @@ def _configure_optimizer(learning_rate, momentum):
   elif FLAGS.optimizer == 'sgd':
     optimizer = tf.train.GradientDescentOptimizer(learning_rate)
   else:
-    raise ValueError('Optimizer [%s] was not recognized' % FLAGS.optimizer)
+    raise ValueError('Optimizer [%s] was not recognized', FLAGS.optimizer)
   return optimizer
+
+
+def _add_variables_summaries(learning_rate):
+  summaries = []
+  for variable in slim.get_model_variables():
+    summaries.append(tf.summary.histogram(variable.op.name, variable))
+  summaries.append(tf.summary.scalar('training/Learning Rate', learning_rate))
+  return summaries
 
 
 def _get_init_fn():
@@ -409,6 +434,18 @@ def _get_init_fn():
 
   tf.logging.info('Fine-tuning from %s' % checkpoint_path)
 
+  if FLAGS.set_global_step:
+    ckpt_init_fn = slim.assign_from_checkpoint_fn(
+        checkpoint_path,
+        variables_to_restore,
+        ignore_missing_vars=FLAGS.ignore_missing_vars)
+    global_step = tf.train.get_or_create_global_step()
+    global_step_assign_op = global_step.assign(FLAGS.set_global_step)
+    def init_fn(sess):
+      ckpt_init_fn(sess)
+      sess.run(global_step_assign_op)
+    return init_fn
+
   return slim.assign_from_checkpoint_fn(
       checkpoint_path,
       variables_to_restore,
@@ -439,9 +476,16 @@ def main(_):
 
   tf.logging.set_verbosity(tf.logging.INFO)
   with tf.Graph().as_default():
-    #######################
-    # Config model_deploy #
-    #######################
+    if FLAGS.fixed_random_seed:
+      print('Setting fixed random seeds.')
+      #import numpy as np
+      #np.random.seed(FLAGS.fixed_random_seed)
+      tf.set_random_seed(FLAGS.fixed_random_seed)
+
+
+    ######################
+    # Config model_deploy#
+    ######################
     deploy_config = model_deploy.DeploymentConfig(
         num_clones=FLAGS.num_clones,
         clone_on_cpu=FLAGS.clone_on_cpu,
@@ -459,14 +503,15 @@ def main(_):
     dataset = dataset_factory.get_dataset(
         FLAGS.dataset_name, FLAGS.dataset_split_name, FLAGS.dataset_dir)
 
-    ######################
+    ####################
     # Select the network #
-    ######################
+    ####################
     network_fn = nets_factory.get_network_fn(
         FLAGS.model_name,
         num_classes=(dataset.num_classes - FLAGS.labels_offset),
         weight_decay=FLAGS.weight_decay,
         is_training=True,
+        fixed_random_seed=FLAGS.fixed_random_seed,
         attention_module=FLAGS.attention_module)   
 
     #####################################
@@ -539,6 +584,8 @@ def main(_):
       summaries.add(tf.summary.histogram('activations/' + end_point, x))
       summaries.add(tf.summary.scalar('sparsity/' + end_point,
                                       tf.nn.zero_fraction(x)))
+
+
 
     # Add summaries for losses.
     for loss in tf.get_collection(tf.GraphKeys.LOSSES, first_clone_scope):
@@ -621,6 +668,16 @@ def main(_):
     # Merge all summaries together.
     summary_op = tf.summary.merge(list(summaries), name='summary_op')
 
+    if FLAGS.modest:
+        # Configure session to take only needed GPU memory
+        session_config = tf.ConfigProto()
+        session_config.gpu_options.allow_growth=True
+        session_config.intra_op_parallelism_threads=3 # start only one CPU thread !
+        session_config.inter_op_parallelism_threads=3 # start only one CPU thread !
+
+    else:
+        session_config = None
+
     ###########################
     # Kicks off the training. #
     ###########################
@@ -635,7 +692,9 @@ def main(_):
         log_every_n_steps=FLAGS.log_every_n_steps,
         save_summaries_secs=FLAGS.save_summaries_secs,
         save_interval_secs=FLAGS.save_interval_secs,
-        sync_optimizer=optimizer if FLAGS.sync_replicas else None)
+        session_config=session_config,
+        sync_optimizer=optimizer if FLAGS.sync_replicas else None
+    )
 
 
 if __name__ == '__main__':

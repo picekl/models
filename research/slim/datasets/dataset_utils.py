@@ -34,7 +34,7 @@ def int64_feature(values):
     values: A scalar or list of values.
 
   Returns:
-    A TF-Feature.
+    a TF-Feature.
   """
   if not isinstance(values, (tuple, list)):
     values = [values]
@@ -72,7 +72,7 @@ def bytes_feature(values):
     values: A string.
 
   Returns:
-    A TF-Feature.
+    a TF-Feature.
   """
   return tf.train.Feature(bytes_list=tf.train.BytesList(value=[values]))
 
@@ -162,15 +162,21 @@ def read_label_file(dataset_dir, filename=LABELS_FILENAME):
     A map from a label (integer) to class name.
   """
   labels_filename = os.path.join(dataset_dir, filename)
-  with tf.gfile.Open(labels_filename, 'rb') as f:
-    lines = f.read().decode()
+  with tf.gfile.Open(labels_filename, 'r') as f:
+    lines = f.read() #.decode()
   lines = lines.split('\n')
   lines = filter(None, lines)
 
   labels_to_class_names = {}
-  for line in lines:
-    index = line.index(':')
-    labels_to_class_names[int(line[:index])] = line[index+1:]
+  try:
+    for line in lines:
+      index = line.index(':')
+      labels_to_class_names[int(line[:index])] = line[index+1:].strip().strip(',').strip("''")
+  except:
+    print("Labels file not in format id:label. Using each line as label.")
+    for i, line in enumerate(lines):
+      labels_to_class_names[i] = line
+
   return labels_to_class_names
 
 
