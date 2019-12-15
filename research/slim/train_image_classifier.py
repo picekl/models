@@ -264,6 +264,12 @@ tf.app.flags.DEFINE_string(
     'attention_module', None,
     'The name of attention module to use.')
 
+###############
+# Random seed #
+###############
+
+tf.app.flags.DEFINE_integer('fixed_random_seed', None, 'Allows value to set a value to seed the random generator(s).')
+
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -511,7 +517,6 @@ def main(_):
         num_classes=(dataset.num_classes - FLAGS.labels_offset),
         weight_decay=FLAGS.weight_decay,
         is_training=True,
-        fixed_random_seed=FLAGS.fixed_random_seed,
         attention_module=FLAGS.attention_module)   
 
     #####################################

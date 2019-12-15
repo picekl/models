@@ -14,15 +14,15 @@
 export CUDA_VISIBLE_DEVICES=4
 
 
-CROP_POSITION='0.0_0.0'
-CROP_SIZE=1.0
+CROP_POSITION='0.1_0.1'
+CROP_SIZE=8.0
 MIRROR=0
 
 TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/tf_records_train
 
-TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/evaluatios/inception_v4_iNat_SC5
+TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/evaluatios/inception_v4_iNat_No_Attention
 
-CKPT=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_iNat2017_SC5/model.ckpt-11071
+CKPT=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_No_Attention/model.ckpt-28482
 
 echo "$Evaluating $CKPT"
 python eval_image_classifier.py \
@@ -32,11 +32,5 @@ python eval_image_classifier.py \
            --dataset_split_name=val \
            --dataset_dir=${TF_DATASET_DIR} \
            --model_name=inception_v4 \
-           --preprocessing_name=inception_test_crop \
-           --modest=True \
-           --crop_position="$CROP_POSITION" \
-           --crop_size="$CROP_SIZE" \
-           --save_fc=Predictions \
-           --mirror=$MIRROR \
-           --save_filenames=True
-
+           --preprocessing_name=inception_v4 \
+           --modest=True

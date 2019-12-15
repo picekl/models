@@ -12,7 +12,7 @@
 export CUDA_VISIBLE_DEVICES=0
 
 TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/tf_records_train
-TF_TRAIN_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_No_Attention
+TF_TRAIN_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_CBAM
 TF_CHECKPOINT_PATH=/mnt/datagrid/personal/picekluk/pretrained_models/inception_v4_iNat2017/inception_v4_iNat_448.ckpt
 
 mkdir -p $TF_TRAIN_DIR
@@ -31,4 +31,5 @@ python3 train_image_classifier.py \
     --save_summaries_secs=3600 \
     --moving_average_decay=0.999 \
     --modest=True \
-    --batch_size=32
+    --batch_size=32 \
+    --attention_module=cbam_block
