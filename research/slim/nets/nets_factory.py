@@ -113,18 +113,20 @@ arg_scopes_map = {'alexnet_v2': alexnet.alexnet_v2_arg_scope,
                  }
 
 
-def get_network_fn(name, num_classes, weight_decay=0.0, is_training=False, attention_module=None):
-  """Returns a network_fn such as `logits, end_points = network_fn(images)`.
+def get_network_fn(name, num_classes, weight_decay=0.0, is_training=False, attention_module=None, fixed_random_seed=None):
+    """Returns a network_fn such as `logits, end_points = network_fn(images)`.
 
-  Args:
+    Args:
     name: The name of the network.
     num_classes: The number of classes to use for classification. If 0 or None,
       the logits layer is omitted and its input features are returned instead.
+    num_classes: The number of classes to use for classification.
     weight_decay: The l2 coefficient for the model weights.
     is_training: `True` if the model is being used for training and `False`
       otherwise.
+    fixed_random_seed: Set a seed value to fix the random seed (only for accordingly adjusted nets).
 
-  Returns:
+    Returns:
     network_fn: A function that applies the model to a batch of images. It has
       the following signature:
           net, end_points = network_fn(images)
@@ -141,21 +143,23 @@ def get_network_fn(name, num_classes, weight_decay=0.0, is_training=False, atten
       (even if the network's original classification does); it remains for
       the caller to do this or not.
 
-  Raises:
+    Raises:
     ValueError: If network `name` is not recognized.
-  """
-  if name not in networks_map:
-    raise ValueError('Name of network unknown %s' % name)
-  func = networks_map[name]
-  @functools.wraps(func)
-  def network_fn(images, **kwargs):
-    arg_scope = arg_scopes_map[name](weight_decay=weight_decay)
-    if attention_module is not None:
-      kwargs['attention_module'] = attention_module
-    with slim.arg_scope(arg_scope):
-      return func(images, num_classes=num_classes, is_training=is_training,
-                  **kwargs)
-  if hasattr(func, 'default_image_size'):
-    network_fn.default_image_size = func.default_image_size
+    """
+    if name not in networks_map:
+        raise ValueError('Name of network unknown %s' % name)
+    func = networks_map[name]
+    @functools.wraps(func)
+    def network_fn(images, **kwargs):
+        arg_scope = arg_scopes_map[name](weight_decay=weight_decay)
+        if attention_module is not None:
+            kwargs['attention_module'] = attention_module
+        with slim.arg_scope(arg_scope):
+              if fixed_random_seed:
+                  return func(images, num_classes=num_classes, is_training=is_training, fixed_random_seed=fixed_random_seed, **kwargs)
+              else:
+                  return func(images, num_classes=num_classes, is_training=is_training, **kwargs)
+    if hasattr(func, 'default_image_size'):
+        network_fn.default_image_size = func.default_image_size
 
-  return network_fn
+    return network_fn

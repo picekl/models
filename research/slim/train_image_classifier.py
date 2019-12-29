@@ -26,6 +26,10 @@ from nets import nets_factory
 from preprocessing import preprocessing_factory
 from utils import learning_rate_schedule
 
+
+from my_slim import learning as my_learning
+
+
 slim = tf.contrib.slim
 
 tf.app.flags.DEFINE_string(
@@ -517,6 +521,7 @@ def main(_):
         num_classes=(dataset.num_classes - FLAGS.labels_offset),
         weight_decay=FLAGS.weight_decay,
         is_training=True,
+        fixed_random_seed=FLAGS.fixed_random_seed,
         attention_module=FLAGS.attention_module)   
 
     #####################################
@@ -548,17 +553,18 @@ def main(_):
           batch_size=FLAGS.batch_size,
           num_threads=FLAGS.num_preprocessing_threads,
           capacity=5 * FLAGS.batch_size)
+      labels_node = labels
       labels = slim.one_hot_encoding(
           labels, dataset.num_classes - FLAGS.labels_offset)
       batch_queue = slim.prefetch_queue.prefetch_queue(
-          [images, labels], capacity=2 * deploy_config.num_clones)
+          [images, labels, labels_node], capacity=2 * deploy_config.num_clones)
 
     ####################
     # Define the model #
     ####################
     def clone_fn(batch_queue):
       """Allows data parallelism by creating multiple clones of network_fn."""
-      images, labels = batch_queue.dequeue()
+      images, labels, labels_node = batch_queue.dequeue()
       logits, end_points = network_fn(images)
 
       #############################
@@ -567,10 +573,8 @@ def main(_):
       if 'AuxLogits' in end_points:
         slim.losses.softmax_cross_entropy(
             end_points['AuxLogits'], labels,
-            label_smoothing=FLAGS.label_smoothing, weights=0.4,
-            scope='aux_loss')
-      slim.losses.softmax_cross_entropy(
-          logits, labels, label_smoothing=FLAGS.label_smoothing, weights=1.0)
+            label_smoothing=FLAGS.label_smoothing, weights=0.4, scope='aux_loss')
+      slim.losses.softmax_cross_entropy(logits, labels, label_smoothing=FLAGS.label_smoothing, weights=1.0)
       return end_points
 
     # Gather initial summaries.
@@ -619,7 +623,7 @@ def main(_):
     #########################################
     with tf.device(deploy_config.optimizer_device()):
       learning_rate = _configure_learning_rate(dataset.num_samples, global_step)
-      if FLAGS.learning_rate_decay_type == 'one_cycle':
+      if FLAGS.learning_rate_decay_type == 'one_cycle' or FLAGS.learning_rate_decay_type == 'CLR':
         momentum = learning_rate_schedule.cyclical_momentum(global_step,
                                                             min_momentum=FLAGS.min_momentum,
                                                             max_momentum=FLAGS.momentum,
@@ -686,7 +690,7 @@ def main(_):
     ###########################
     # Kicks off the training. #
     ###########################
-    slim.learning.train(
+    my_learning.train(
         train_tensor,
         logdir=FLAGS.train_dir,
         master=FLAGS.master,
@@ -697,9 +701,10 @@ def main(_):
         log_every_n_steps=FLAGS.log_every_n_steps,
         save_summaries_secs=FLAGS.save_summaries_secs,
         save_interval_secs=FLAGS.save_interval_secs,
+        save_interval_steps=FLAGS.save_interval_steps,
         session_config=session_config,
-        sync_optimizer=optimizer if FLAGS.sync_replicas else None
-    )
+        sync_optimizer=optimizer if FLAGS.sync_replicas else None,
+        fixed_random_seed=FLAGS.fixed_random_seed)
 
 
 if __name__ == '__main__':

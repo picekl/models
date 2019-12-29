@@ -126,8 +126,8 @@ def main(_):
     network_fn = nets_factory.get_network_fn(
         FLAGS.model_name,
         num_classes=(dataset.num_classes - FLAGS.labels_offset),
-        is_training=FLAGS.is_training)
-    image_size = FLAGS.image_size or network_fn.default_image_size
+        is_training=FLAGS.is_training, weight_decay=0.999)
+    image_size = 598
     if FLAGS.is_video_model:
       input_shape = [FLAGS.batch_size, FLAGS.num_frames,
                      image_size, image_size, 3]
