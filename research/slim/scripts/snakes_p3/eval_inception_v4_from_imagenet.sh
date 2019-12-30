@@ -19,9 +19,7 @@ CROP_SIZE=0.6
 MIRROR=0
 
 TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/tf_records_train
-
 TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/evaluatios/inception_v4
-
 CKPT=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4/step_checkpoints/model.ckpt-1000000
 
 echo "$Evaluating $CKPT"
