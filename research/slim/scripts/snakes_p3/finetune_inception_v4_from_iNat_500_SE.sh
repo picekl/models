@@ -3,10 +3,10 @@
 # 2019, Lukas Picek ZCU | CMP
 ##
 
-export CUDA_VISIBLE_DEVICES=7
+export CUDA_VISIBLE_DEVICES=0
 
 TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/tf_records_train
-TF_TRAIN_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_new_slim_500_2
+TF_TRAIN_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_SE_500
 TF_CHECKPOINT_PATH=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_iNat2017/model.ckpt-1000000
 
 mkdir -p $TF_TRAIN_DIR
@@ -27,4 +27,5 @@ python3 train_image_classifier.py \
     --save_summaries_secs=900 \
     --moving_average_decay=0.999 \
     --modest=True \
-    --batch_size=16
+    --batch_size=16 \
+    --attention_module=se_block

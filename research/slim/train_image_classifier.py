@@ -148,14 +148,13 @@ tf.app.flags.DEFINE_integer(
 #######################
 
 tf.app.flags.DEFINE_string(
-    'learning_rate_decay_type',
-    'exponential',
+    'learning_rate_decay_type', 'exponential',
     'Specifies how the learning rate is decayed. One of "fixed", "exponential", "polynomial", "CLR", "one_cycle"')
 
-tf.app.flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
+tf.app.flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
 
 tf.app.flags.DEFINE_float(
-    'end_learning_rate', 0.0001,
+    'end_learning_rate', 0.00001,
     'The minimal end learning rate used by a polynomial decay learning rate.')
 
 tf.app.flags.DEFINE_float(
@@ -169,7 +168,7 @@ tf.app.flags.DEFINE_float(
     'learning_rate_decay_factor', 0.94, 'Learning rate decay factor.')
 
 tf.app.flags.DEFINE_float(
-    'num_epochs_per_decay', 2.0,
+    'num_epochs_per_decay', 1.0,
     'Number of epochs after which learning rate decays. Note: this flag counts '
     'epochs per clone but aggregates per sync replicas. So 1.0 means that '
     'each clone will go over full epoch individually, but replicas will go '

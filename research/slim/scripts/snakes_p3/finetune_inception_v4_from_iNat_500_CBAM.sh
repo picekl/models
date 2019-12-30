@@ -3,7 +3,7 @@
 # 2019, Lukas Picek ZCU | CMP
 ##
 
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 
 TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/tf_records_train
 TF_TRAIN_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_CBAM_500
@@ -27,5 +27,5 @@ python3 train_image_classifier.py \
     --save_summaries_secs=1800 \
     --moving_average_decay=0.999 \
     --modest=True \
-    --batch_size=24 \
+    --batch_size=12 \
     --attention_module=cbam_block
