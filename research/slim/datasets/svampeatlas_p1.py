@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Provides data for the Snake Recognition challenge.
+"""Provides data for the FGVC Fungi 2018 challenge.
 
 """
 
@@ -27,15 +27,15 @@ from datasets import dataset_utils
 
 slim = tf.contrib.slim
 
-_FILE_PATTERN = 'SnakesP3_%s-*'
+_FILE_PATTERN = 'SvampeAtlas_%s-*'
 
-_SPLITS_TO_SIZES = {'train': 128805, 'val': 1678, 'test': 200}
+_SPLITS_TO_SIZES = {'train': 89829, 'validation': 0} 
 
-_NUM_CLASSES = 85
+_NUM_CLASSES = 1395 # 1394 classes 
 
 _ITEMS_TO_DESCRIPTIONS = {
     'image': 'A color image of varying size.',
-    'label': 'A single integer between 0 and 84',
+    'label': 'A single integer between 0 and 10000',
 }
 
 

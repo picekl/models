@@ -253,53 +253,60 @@ def preprocess_for_train(image,
 def preprocess_for_eval(image,
                         height,
                         width,
-                        central_fraction=1.0,
+                        central_fraction=0.65,
                         scope=None,
                         central_crop=True):
-  """Prepare one image for evaluation.
 
-  If height and width are specified it would output an image with that size by
-  applying resize_bilinear.
+    min_size = 500
+    crop_size = 0.65
 
-  If central_fraction is specified it would crop the central fraction of the
-  input image.
+    with tf.name_scope(scope, 'eval_image', [image, height, width]):
+        if image.dtype != tf.float32:
+            image = tf.image.convert_image_dtype(image, dtype=tf.float32)
 
-  Args:
-    image: 3-D Tensor of image. If dtype is tf.float32 then the range should be
-      [0, 1], otherwise it would converted to tf.float32 assuming that the range
-      is [0, MAX], where MAX is largest positive representable number for
-      int(8/16/32) data type (see `tf.image.convert_image_dtype` for details).
-    height: integer
-    width: integer
-    central_fraction: Optional Float, fraction of the image to crop.
-    scope: Optional scope for name_scope.
-    central_crop: Enable central cropping of images during preprocessing for
-      evaluation.
-  Returns:
-    3-D float Tensor of prepared image.
-  """
-  with tf.name_scope(scope, 'eval_image', [image, height, width]):
-    if image.dtype != tf.float32:
-      image = tf.image.convert_image_dtype(image, dtype=tf.float32)
-    # Crop the central region of the image with an area containing 87.5% of
-    # the original image.
+        # Add summary image for a visual check of the cropouts
+        tf.summary.image('Original_image', tf.expand_dims(image, 0))
 
-    s = tf.shape(image)
-    cropsize = tf.minimum(s[0], s[1])
-    image = tf.image.resize_image_with_crop_or_pad(image, cropsize, cropsize)
+        h, w = tf.shape(image)[0], tf.shape(image)[1]
+        x_c = w/2
+        y_c = h/2
+	
+        if (tf.cast(h * crop_size)) > min_size and tf.cast((w * crop_size)) > min_size:
+            if h > w:
+                x = int(x_c - (tf.cast(crop_size * w) / 2))
+                y = int(y_c - (tf.cast(crop_size * w) / 2))
+                w = int(tf.cast(w * crop_size))
+                h = w
+            else:
+                x = int(x_c - (tf.cast(crop_size * h) / 2))
+                y = int(y_c - (tf.cast(crop_size * h) / 2))
+                w = int(tf.cast(h * crop_size))
+                h = w
+        else:
 
-    if central_crop and central_fraction:
-      image = tf.image.central_crop(image, central_fraction=central_fraction)
+            if h > w:
+                x = int(x_c - (tf.cast(w / 2)))
+                y = int(y_c - (tf.cast(w / 2)))
+                h = w
+            else:
+                x = int(x_c - (tf.cast(h / 2)))
+                y = int(y_c - (tf.cast(h / 2)))
+                w = h
 
-    if height and width:
-      # Resize the image to the specified height and width.
-      image = tf.expand_dims(image, 0)
-      image = tf.image.resize_nearest_neighbor(image, [height, width],
-                                       align_corners=False)
-      image = tf.squeeze(image, [0])
-    image = tf.subtract(image, 0.5)
-    image = tf.multiply(image, 2.0)
-    return image
+        image = tf.image.crop_to_bounding_box(image, x, y, h, w)
+        tf.summary.image('Cropped_image', tf.expand_dims(image, 0))
+
+        image = tf.expand_dims(image, 0)
+        image = tf.image.resize_bilinear(image, [height, width], align_corners=False)
+        # Add summary image for a visual check of the cropouts
+        tf.summary.image('Resized_image', image)
+
+        image = tf.squeeze(image, [0])
+
+        tf.summary.image('Rotated_image', tf.expand_dims(image, 0))
+        image = tf.subtract(image, 0.5)
+        image = tf.multiply(image, 2.0)
+        return image
 
 
 def preprocess_image(image,

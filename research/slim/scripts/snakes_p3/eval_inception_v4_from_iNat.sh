@@ -14,8 +14,8 @@ CROP_SIZE=0.8
 MIRROR=0
 
 TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/tf_records_train
-TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/evaluatios/inception_v4_new_slim
-CKPT=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_new_slim/model.ckpt-40000
+TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/evaluatios/inception_v4_300
+CKPT=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/first_experiments/inception_v4_iNat2017/model.ckpt-1000000
 
 echo "$Evaluating $CKPT"
 python3 eval_image_classifier.py \

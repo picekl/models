@@ -24,7 +24,7 @@ from datasets import imagenet
 from datasets import mnist
 from datasets import visualwakewords
 from datasets import snakes2019p3
-
+from datasets import svampeatlas_p1
 
 datasets_map = {
     'cifar10': cifar10,
@@ -32,7 +32,8 @@ datasets_map = {
     'imagenet': imagenet,
     'mnist': mnist,
     'visualwakewords': visualwakewords,
-    'snakes2019p3': snakes2019p3
+    'snakes2019p3': snakes2019p3,
+    'svampeatlas_p1': svampeatlas_p1
 }
 
 

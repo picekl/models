@@ -6,16 +6,16 @@
 ##
 
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=1
 
 
-CROP_POSITION='0.2_0.2'
+CROP_POSITION='0.1_0.1'
 CROP_SIZE=0.8
 MIRROR=0
 
 TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/tf_records_train
-TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/evaluatios/inception_v4_new_slim_500_filtered_plus_val
-CKPT=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_new_slim_500_2/step_checkpoints/model.ckpt-250000
+TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/SnakeRecognition/evaluatios/inception_v4_300_SE
+CKPT=/mnt/datagrid/personal/picekluk/SnakeRecognition/checkpoints/inception_v4_SE_300/model.ckpt-120000
 
 echo "$Evaluating $CKPT"
 python3 eval_image_classifier.py \
@@ -27,5 +27,6 @@ python3 eval_image_classifier.py \
            --model_name=inception_v4 \
            --preprocessing_name=inception_v4 \
            --moving_average_decay=0.999 \
-           --eval_image_size=500 \
-           --modest=True
+           --modest=True \
+           --attention_module=se_block
+
