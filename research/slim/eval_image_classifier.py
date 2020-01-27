@@ -130,7 +130,7 @@ tf.app.flags.DEFINE_boolean(
 FLAGS = tf.app.flags.FLAGS
 
 
-def main(num_images, iteration='1', central_fraction=0.8, mirror=None, rotation=None):
+def main(iteration='1', central_fraction=0.8, mirror=None, rotation=None):
     if not FLAGS.dataset_dir:
         raise ValueError('You must supply the dataset directory with --dataset_dir')
 
@@ -237,7 +237,11 @@ def main(num_images, iteration='1', central_fraction=0.8, mirror=None, rotation=
             op = tf.Print(op, [value], summary_name)
             tf.add_to_collection(tf.GraphKeys.SUMMARIES, op)
 
-        num_batches = math.ceil(num_images / float(FLAGS.batch_size))
+        if FLAGS.max_num_batches:
+            num_batches = FLAGS.max_num_batches
+        else:
+            # This ensures that we make a single pass over all of the data.
+            num_batches = math.ceil(num_images / float(FLAGS.batch_size))
 
         if FLAGS.num_augmentations > 0:
             num_batches *= FLAGS.num_augmentations
