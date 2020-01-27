@@ -261,6 +261,8 @@ def preprocess_for_eval(image,
                         central_fraction=0.8,
                         scope=None,
                         central_crop=True,
+                        mirror=None,
+                        rotation=None,
                         use_grayscale=False):
   """Prepare one image for evaluation.
 
@@ -297,15 +299,18 @@ def preprocess_for_eval(image,
     cropsize = tf.minimum(s[0], s[1])
     image = tf.image.resize_image_with_crop_or_pad(image, cropsize, cropsize)
 
+    if mirror:
+        image = tf.image.flip_left_right(image)
+    if rotation:
+        image = tf.image.rot90(image, k=rotation)
     if central_crop and central_fraction:
-      image = tf.image.central_crop(image, central_fraction=central_fraction)
+        image = tf.image.central_crop(image, central_fraction=central_fraction)
 
     if height and width:
-      # Resize the image to the specified height and width.
-      image = tf.expand_dims(image, 0)
-      image = tf.image.resize_nearest_neighbor(image, [height, width],
-                                       align_corners=False)
-      image = tf.squeeze(image, [0])
+        # Resize the image to the specified height and width.
+        image = tf.expand_dims(image, 0)
+        image = tf.image.resize_bilinear(image, [height, width], align_corners=False)
+        image = tf.squeeze(image, [0])
     image = tf.subtract(image, 0.5)
     image = tf.multiply(image, 2.0)
     return image
@@ -319,6 +324,9 @@ def preprocess_image(image,
                      fast_mode=True,
                      add_image_summaries=True,
                      crop_image=True,
+                     central_fraction=0.8,
+                     mirror=None,
+                     rotation=None,
                      use_grayscale=False):
   """Pre-process one image for training or evaluation.
 
@@ -358,9 +366,4 @@ def preprocess_image(image,
         random_crop=crop_image,
         use_grayscale=use_grayscale)
   else:
-    return preprocess_for_eval(
-        image,
-        height,
-        width,
-        central_crop=crop_image,
-        use_grayscale=use_grayscale)
+    return preprocess_for_eval(image, height, width, central_crop=crop_image, central_fraction=central_fraction, mirror=mirror, rotation=rotation, use_grayscale=use_grayscale)
