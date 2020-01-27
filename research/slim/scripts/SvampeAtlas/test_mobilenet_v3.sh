@@ -12,8 +12,8 @@
 export CUDA_VISIBLE_DEVICES=2
 
 TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/SvampeAtlas/tf_records
-TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/SvampeAtlas/evaluatios/inception_resnet_v2_plantclef_500
-CKPT=/mnt/datagrid/personal/picekluk/SvampeAtlas/checkpoints/inception_resnet_v2_plantclef_500/step_checkpoints/model.ckpt-80000
+TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/SvampeAtlas/evaluatios/mobilenet_v3
+CKPT=/mnt/datagrid/personal/picekluk/SvampeAtlas/checkpoints/mobilenet_v3/step_checkpoints/model.ckpt-80000
 
 echo "$Evaluating $CKPT"
 python3 eval_image_classifier.py \
@@ -22,7 +22,7 @@ python3 eval_image_classifier.py \
            --dataset_name=svampeatlas_p1 \
            --dataset_split_name=validation \
            --dataset_dir=${TF_DATASET_DIR} \
-           --model_name=inception_resnet_v2 \
+           --model_name=mobilenet_v3_large \
            --moving_average_decay=0.999 \
-           --eval_image_size=500 \
            --modest=True
+
