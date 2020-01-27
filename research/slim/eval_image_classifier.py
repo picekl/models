@@ -127,7 +127,12 @@ tf.app.flags.DEFINE_boolean(
 FLAGS = tf.app.flags.FLAGS
 
 
-def main(iteration='1', central_fraction=0.8, mirror=None, rotation=None):
+def main(_):
+    iteration = '1'
+    central_fraction = 0.8
+    mirror = None
+    rotation = None
+
     if not FLAGS.dataset_dir:
         raise ValueError('You must supply the dataset directory with --dataset_dir')
 

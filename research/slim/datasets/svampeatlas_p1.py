@@ -29,7 +29,7 @@ slim = tf.contrib.slim
 
 _FILE_PATTERN = 'SvampeAtlas_%s-*'
 
-_SPLITS_TO_SIZES = {'train': 89829, 'validation': 0} 
+_SPLITS_TO_SIZES = {'train': 89829, 'validation': 4182}
 
 _NUM_CLASSES = 1395 # 1394 classes 
 
