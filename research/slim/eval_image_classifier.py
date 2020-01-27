@@ -42,7 +42,7 @@ tf.app.flags.DEFINE_string(
     'master', '', 'The address of the TensorFlow master to use.')
 
 tf.app.flags.DEFINE_string(
-    'checkpoint_path', 'snake_recognition_p3/models/model.ckpt-1000000',
+    'checkpoint_path', None,
     'The directory where the model was written to or an absolute path to a '
     'checkpoint file.')
 
@@ -60,7 +60,7 @@ tf.app.flags.DEFINE_string(
     'dataset_split_name', 'val', 'The name of the train/test split.')
 
 tf.app.flags.DEFINE_string(
-    'dataset_dir', 'snake_recognition_p3/tf_records', 'The directory where the dataset files are stored.')
+    'dataset_dir', None, 'The directory where the dataset files are stored.')
 
 tf.app.flags.DEFINE_integer(
     'labels_offset', 0,
@@ -117,9 +117,6 @@ tf.app.flags.DEFINE_boolean(
 tf.app.flags.DEFINE_integer(
     'rotation', 0, 'The number of times the (mirrored) image is rotated counter-clockwise by 90 degrees.')
 
-tf.app.flags.DEFINE_integer(
-    'force_num_classes', None, 'Overwrites the dataset number of classes.')
-
 ########################
 # Session Config Flags #
 ########################
@@ -147,12 +144,9 @@ def main(iteration='1', central_fraction=0.8, mirror=None, rotation=None):
         ####################
         # Select the model #
         ####################
-        num_classes = dataset.num_classes - FLAGS.labels_offset
-        if FLAGS.force_num_classes:
-            num_classes = FLAGS.force_num_classes
         network_fn = nets_factory.get_network_fn(
             FLAGS.model_name,
-            num_classes=num_classes,
+            num_classes=(dataset.num_classes - FLAGS.labels_offset),
             is_training=False)
 
         ##############################################################
