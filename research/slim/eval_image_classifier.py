@@ -241,7 +241,7 @@ def main(iteration='1', central_fraction=0.8, mirror=None, rotation=None):
             num_batches = FLAGS.max_num_batches
         else:
             # This ensures that we make a single pass over all of the data.
-            num_batches = math.ceil(num_images / float(FLAGS.batch_size))
+            num_batches = math.ceil(dataset.num_samples / float(FLAGS.batch_size))
 
         if FLAGS.num_augmentations > 0:
             num_batches *= FLAGS.num_augmentations
