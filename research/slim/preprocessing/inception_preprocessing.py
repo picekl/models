@@ -258,7 +258,7 @@ def preprocess_for_train(image,
 def preprocess_for_eval(image,
                         height,
                         width,
-                        central_fraction=1.0,
+                        central_fraction=0.8,
                         scope=None,
                         central_crop=True,
                         use_grayscale=False):
