@@ -21,10 +21,10 @@ from __future__ import print_function
 import math
 import tensorflow as tf
 
-from snake_recognition_p3.slim.datasets import dataset_factory
-from snake_recognition_p3.slim.nets import nets_factory
-from snake_recognition_p3.slim.preprocessing import preprocessing_factory
-from snake_recognition_p3.slim.my_slim import evaluation as slim_evaluation
+from datasets import dataset_factory
+from nets import nets_factory
+from preprocessing import preprocessing_factory
+from my_slim import evaluation as slim_evaluation
 
 import os
 import numpy as np
@@ -130,7 +130,7 @@ tf.app.flags.DEFINE_boolean(
 FLAGS = tf.app.flags.FLAGS
 
 
-def eval_images(num_images, iteration='1', central_fraction=0.8, mirror=None, rotation=None):
+def main(num_images, iteration='1', central_fraction=0.8, mirror=None, rotation=None):
     if not FLAGS.dataset_dir:
         raise ValueError('You must supply the dataset directory with --dataset_dir')
 
@@ -342,4 +342,5 @@ def eval_images(num_images, iteration='1', central_fraction=0.8, mirror=None, ro
             with open(accuracy_file, 'w') as f:
                 f.write("%f\n%f" % (accuracy, recal5))
 
-
+if __name__ == '__main__':
+  tf.app.run()
