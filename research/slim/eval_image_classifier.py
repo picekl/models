@@ -99,7 +99,7 @@ tf.app.flags.DEFINE_boolean(
     'save_filenames', True, 'Save a txt list of evaluated image filenames.')
 
 tf.app.flags.DEFINE_boolean(
-    'save_accuracy', True, 'Save the evaluation accuracy to eval_dir.')
+    'save_accuracy', False, 'Save the evaluation accuracy to eval_dir.')
 
 tf.app.flags.DEFINE_integer(
     'num_augmentations', 0, 'If "num_augmentations">0, test n-times with random augmentations ')
@@ -129,7 +129,7 @@ FLAGS = tf.app.flags.FLAGS
 
 def main(_):
     iteration = '1'
-    central_fraction = 0.8
+    central_fraction = 1.0
     mirror = None
     rotation = None
 
@@ -222,12 +222,12 @@ def main(_):
 
         names_to_values, names_to_updates = slim.metrics.aggregate_metric_map({
             'Accuracy': slim.metrics.streaming_accuracy(predictions, labels),
-            'Recall@5': slim.metrics.streaming_sparse_recall_at_k(logits, labels, 5),
+            'Recall@3': slim.metrics.streaming_sparse_recall_at_k(logits, labels, 3),
         })
 
         # Note: slim.metrics.streaming_recall_at_k replaced with slim.metrics.streaming_sparse_recall_at_k
 
-        names_to_updates_ordered = [names_to_updates['Accuracy'], names_to_updates['Recall@5']]
+        names_to_updates_ordered = [names_to_updates['Accuracy'], names_to_updates['Recall@3']]
 
         # Print the summaries to screen.
         for name, value in names_to_values.items():
@@ -262,7 +262,7 @@ def main(_):
         else:
             session_config = None
 
-        eval_ops = [names_to_updates['Accuracy'], names_to_updates['Recall@5']]
+        eval_ops = [names_to_updates['Accuracy'], names_to_updates['Recall@3']]
         return_eval_ops = [0, 1]
 
         if FLAGS.save_prediction_list:
@@ -339,7 +339,7 @@ def main(_):
         if FLAGS.save_accuracy:
             accuracy_file = os.path.join(FLAGS.eval_dir,
                                          os.path.basename(checkpoint_path) + additional_suffix + '_' + iteration + ".accuracy")
-            print("Saving model Accuracy and Recal@5 to ", accuracy_file)
+            print("Saving model Accuracy and Recal@3 to ", accuracy_file)
             print(type(final_op_value), final_op_value)
             accuracy, recal5 = final_op_value
             with open(accuracy_file, 'w') as f:

@@ -13,7 +13,7 @@ export CUDA_VISIBLE_DEVICES=2
 
 TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/SvampeAtlas/tf_records
 TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/SvampeAtlas/evaluatios/mobilenet_v3
-CKPT=/mnt/datagrid/personal/picekluk/SvampeAtlas/checkpoints/mobilenet_v3/step_checkpoints/model.ckpt-80000
+CKPT=/mnt/datagrid/personal/picekluk/SvampeAtlas/checkpoints/mobilenet_v3_2/step_checkpoints/model.ckpt-80000
 
 echo "$Evaluating $CKPT"
 python3 eval_image_classifier.py \
