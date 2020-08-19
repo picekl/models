@@ -17,8 +17,8 @@ export CUDA_VISIBLE_DEVICES=0
 
 
 TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/CGIAR/tfrecords
-TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/CGIAR/test/inception_resnet_v2_plantclef_500/
-CKPT=/mnt/datagrid/personal/picekluk/CGIAR/checkpoints/inception_resnet_v2_plantclef_500/step_checkpoints/model.ckpt-18000
+TF_EVAL_DIR=/mnt/datagrid/personal/picekluk/CGIAR/test/inception_resnet_v2_plantclef_500_trainval/
+CKPT=/mnt/datagrid/personal/picekluk/CGIAR/checkpoints/inception_resnet_v2_plantclef_500_trainval/step_checkpoints/model.ckpt-18000
 
 
 echo "$Evaluating $CKPT"

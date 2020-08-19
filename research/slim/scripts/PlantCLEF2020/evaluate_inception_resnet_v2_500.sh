@@ -11,7 +11,7 @@
 # As 2018 validation set I use the 2017 test set with GT annotations
 
 
-export CUDA_VISIBLE_DEVICES=6
+export CUDA_VISIBLE_DEVICES=3
 
 
 CROP_POSITION='0.2_0.2'

@@ -24,6 +24,7 @@ from datasets import imagenet
 from datasets import mnist
 from datasets import visualwakewords
 from datasets import snakes2019p3
+from datasets import snakes2020p4
 from datasets import svampeatlas_p1
 from datasets import PlantCLEF2020
 from datasets import CGIAR
@@ -35,6 +36,7 @@ datasets_map = {
     'mnist': mnist,
     'visualwakewords': visualwakewords,
     'snakes2019p3': snakes2019p3,
+    'snakes2020p4': snakes2020p4,
     'svampeatlas_p1': svampeatlas_p1,
     'PlantCLEF2020': PlantCLEF2020,
     'CGIAR':CGIAR

@@ -29,7 +29,7 @@ slim = tf.contrib.slim
 
 _FILE_PATTERN = 'CGIAR_%s-*'
 
-_SPLITS_TO_SIZES = {'train': 1719, 'validation': 30, 'test': 630}
+_SPLITS_TO_SIZES = {'train': 1749, 'validation': 0, 'test': 630}
 
 _NUM_CLASSES = 3
 

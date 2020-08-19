@@ -11,9 +11,9 @@
 
 export CUDA_VISIBLE_DEVICES=0
 
-TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/SvampeAtlas/tf_records
-TF_TRAIN_DIR=/mnt/datagrid/personal/picekluk/SvampeAtlas/checkpoints/inception_resnet_v2_plantclef_500/
-TF_CHECKPOINT_PATH=/mnt/datagrid/personal/picekluk/SvampeAtlas/checkpoints/inception_resnet_v2_plantclef/model.ckpt-800000
+TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/FGVC2018-Mushrooms/tf_records
+TF_TRAIN_DIR=/mnt/datagrid/personal/picekluk/FGVC2018-Mushrooms/checkpoints/inception_resnet_v2_plantclef_500_bells_and_whistles/
+TF_CHECKPOINT_PATH=/mnt/datagrid/personal/picekluk/pretrained_models/classification/inception_resnet_v2/inception_resnet_v2_2016_08_30.ckpt
 
 mkdir -p $TF_TRAIN_DIR
 
@@ -31,6 +31,12 @@ python train_image_classifier.py \
     --save_interval_steps=20000 \
     --save_interval_secs=1800 \
     --save_summaries_secs=1800 \
-    --moving_average_decay=0.999 \
     --modest=True \
-    --batch_size=16
+    --batch_size=16 \
+    --moving_average_decay=0.9999 \
+    --modest=True \
+    --label_smoothing=0.001 \
+    --learning_rate=0.016 \
+    --replicas_to_aggregate=16 \
+
+

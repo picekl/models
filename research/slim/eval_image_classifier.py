@@ -99,7 +99,7 @@ tf.app.flags.DEFINE_boolean(
     'save_filenames', True, 'Save a txt list of evaluated image filenames.')
 
 tf.app.flags.DEFINE_boolean(
-    'save_accuracy', False, 'Save the evaluation accuracy to eval_dir.')
+    'save_accuracy', True, 'Save the evaluation accuracy to eval_dir.')
 
 tf.app.flags.DEFINE_integer(
     'num_augmentations', 0, 'If "num_augmentations">0, test n-times with random augmentations ')
@@ -129,7 +129,7 @@ FLAGS = tf.app.flags.FLAGS
 
 def main(_):
     iteration = '1'
-    central_fraction = 1.0
+    central_fraction = 0.6
     mirror = None
     rotation = None
 
@@ -222,7 +222,9 @@ def main(_):
 
         names_to_values, names_to_updates = slim.metrics.aggregate_metric_map({
             'Accuracy': slim.metrics.streaming_accuracy(predictions, labels),
-            'Recall@3': slim.metrics.streaming_sparse_recall_at_k(logits, labels, 3),
+            'Recall@3': slim.metrics.streaming_sparse_recall_at_k(logits, labels, 3)
+            #'Recall@5': slim.metrics.streaming_sparse_recall_at_k(logits, labels, 5),
+            #'Recall@10': slim.metrics.streaming_sparse_recall_at_k(logits, labels, 10),
         })
 
         # Note: slim.metrics.streaming_recall_at_k replaced with slim.metrics.streaming_sparse_recall_at_k
@@ -292,7 +294,7 @@ def main(_):
 
         if FLAGS.save_prediction_list:
             predictions_file = os.path.join(FLAGS.eval_dir,
-                                            os.path.basename(checkpoint_path) + additional_suffix + '_' + iteration + ".predictions")
+                                            os.path.basename(checkpoint_path) + additional_suffix + '_' + str(central_fraction) +'_'+ iteration + ".predictions")
             print("Saving predictions to ", predictions_file)
             final_predictions = eval_op_values.pop(2)
             with open(predictions_file, 'w') as f:
@@ -301,7 +303,7 @@ def main(_):
                         f.write("%d\n" % item)
         if FLAGS.save_logits_list:
             logits_file = os.path.join(FLAGS.eval_dir,
-                                       os.path.basename(checkpoint_path) + additional_suffix + '_' + iteration + ".logits")
+                                       os.path.basename(checkpoint_path) + additional_suffix + '_' + str(central_fraction) +'_'+ iteration + ".logits")
             print("Saving logits to ", logits_file)
             final_logits = eval_op_values.pop(2)
             with open(logits_file, 'w') as f:
@@ -309,7 +311,7 @@ def main(_):
                     for item in batch:
                         f.write(str(item.tolist())[1:-1] + "\n")
         if FLAGS.save_gt_list:
-            gt_file = os.path.join(FLAGS.eval_dir, os.path.basename(checkpoint_path) + additional_suffix + '_' + iteration + ".gt")
+            gt_file = os.path.join(FLAGS.eval_dir, os.path.basename(checkpoint_path) + additional_suffix + '_' + str(central_fraction) +'_'+ iteration + ".gt")
             print("Saving ground truth to ", gt_file)
             final_gt = eval_op_values.pop(2)
             with open(gt_file, 'w') as f:
@@ -321,13 +323,13 @@ def main(_):
             fc_values = fc_values.reshape(
                 [fc_values.shape[0] * fc_values.shape[1], fc_values.shape[2]])  # join batches together
             fc_file = os.path.join(FLAGS.eval_dir,
-                                   os.path.basename(checkpoint_path) + additional_suffix + '_' + iteration + ".fcvalues.npy")
+                                   os.path.basename(checkpoint_path) + additional_suffix + '_' + str(central_fraction) +'_'+ iteration + ".fcvalues.npy")
             print("Saving FC layer values to ", fc_file)
             np.save(fc_file, fc_values)
 
         if FLAGS.save_filenames:
             filenames_file = os.path.join(FLAGS.eval_dir,
-                                          os.path.basename(checkpoint_path) + additional_suffix + '_' + iteration + ".filenames")
+                                          os.path.basename(checkpoint_path) + additional_suffix + '_' + str(central_fraction) + '_' + iteration + ".filenames")
             print("Saving image filenames to ", filenames_file)
             final_filenames = eval_op_values.pop(2)
             # print(final_filenames)
@@ -338,7 +340,7 @@ def main(_):
 
         if FLAGS.save_accuracy:
             accuracy_file = os.path.join(FLAGS.eval_dir,
-                                         os.path.basename(checkpoint_path) + additional_suffix + '_' + iteration + ".accuracy")
+                                         os.path.basename(checkpoint_path) + additional_suffix + '_' + str(central_fraction) +'_'+ iteration + ".accuracy")
             print("Saving model Accuracy and Recal@3 to ", accuracy_file)
             print(type(final_op_value), final_op_value)
             accuracy, recal5 = final_op_value

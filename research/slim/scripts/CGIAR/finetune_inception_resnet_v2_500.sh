@@ -8,10 +8,10 @@
 
 # As 2018 validation set I use the 2017 test set with GT annotations
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=4
 
-TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/CGIAR/tfrecords
-TF_TRAIN_DIR=/mnt/datagrid/personal/picekluk/CGIAR/checkpoints/inception_resnet_v2_plantclef_500/
+TF_DATASET_DIR=/mnt/datagrid/personal/picekluk/CGIAR/tfrecords_trainval
+TF_TRAIN_DIR=/mnt/datagrid/personal/picekluk/CGIAR/checkpoints/inception_resnet_v2_plantclef_500_trainval/
 TF_CHECKPOINT_PATH=/mnt/datagrid/personal/picekluk/pretrained_models/PlantCLEF2018/inception_resnet_v2/model.ckpt-1200000
 
 mkdir -p $TF_TRAIN_DIR
@@ -26,8 +26,8 @@ python train_image_classifier.py \
     --checkpoint_exclude_scopes=InceptionResnetV2/Logits,InceptionResnetV2/AuxLogits/Logits,InceptionResnetV2/AuxLogits/Conv2d_2a_5x5 \
     --ignore_missing_vars=True \
     --train_image_size=500 \
-    --max_number_of_steps=50000 \
-    --save_interval_steps=2000 \
+    --max_number_of_steps=18000 \
+    --save_interval_steps=1000 \
     --save_interval_secs=1800 \
     --save_summaries_secs=1800 \
     --moving_average_decay=0.999 \

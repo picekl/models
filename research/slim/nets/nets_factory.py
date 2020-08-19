@@ -33,6 +33,8 @@ from nets import s3dg
 from nets import vgg
 from nets.mobilenet import mobilenet_v2
 from nets.mobilenet import mobilenet_v3
+from nets.mobilenet import mobilenet_v3_custom
+from nets.mobilenet import mobilenet_v3_custom2
 from nets.nasnet import nasnet
 from nets.nasnet import pnasnet
 
@@ -71,6 +73,8 @@ networks_map = {
     'mobilenet_v2_035': mobilenet_v2.mobilenet_v2_035,
     'mobilenet_v3_small': mobilenet_v3.small,
     'mobilenet_v3_large': mobilenet_v3.large,
+    'mobilenet_v3_custom': mobilenet_v3_custom.large,
+    'mobilenet_v3_custom2': mobilenet_v3_custom2.large,
     'mobilenet_v3_small_minimalistic': mobilenet_v3.small_minimalistic,
     'mobilenet_v3_large_minimalistic': mobilenet_v3.large_minimalistic,
     'mobilenet_edgetpu': mobilenet_v3.edge_tpu,
@@ -114,6 +118,8 @@ arg_scopes_map = {
     'mobilenet_v2_140': mobilenet_v2.training_scope,
     'mobilenet_v3_small': mobilenet_v3.training_scope,
     'mobilenet_v3_large': mobilenet_v3.training_scope,
+    'mobilenet_v3_custom': mobilenet_v3_custom.training_scope,
+    'mobilenet_v3_custom2': mobilenet_v3_custom2.training_scope,
     'mobilenet_v3_small_minimalistic': mobilenet_v3.training_scope,
     'mobilenet_v3_large_minimalistic': mobilenet_v3.training_scope,
     'mobilenet_edgetpu': mobilenet_v3.training_scope,
